@@ -1,0 +1,38 @@
+{
+  "name": "inferno-swc-example",
+  "version": "1.0.0",
+  "description": "SWC inferno example application!",
+  "scripts": {
+    "build": "cross-env NODE_ENV=production webpack --mode production",
+    "start": "webpack-dev-server --open",
+    "lint": "eslint src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@eslint/js": "^10.0.1",
+    "@swc/core": "^1.12.0",
+    "@tailwindcss/postcss": "^4.1.8",
+    "cross-env": "^10.1.0",
+    "css-loader": "^7.1.2",
+    "eslint": "^10.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-inferno": "^7.37.7",
+    "eslint-webpack-plugin": "^5.0.2",
+    "globals": "^17.4.0",
+    "html-webpack-plugin": "^5.6.3",
+    "inferno": "^9.0.3",
+    "mini-css-extract-plugin": "^2.9.2",
+    "postcss-loader": "^8.1.1",
+    "style-loader": "^4.0.0",
+    "swc-loader": "^0.2.6",
+    "swc-plugin-inferno": "^2.6.0",
+    "tailwindcss": "^4.1.8",
+    "typescript-eslint": "^8.34.0",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^7.0.2",
+    "webpack-dev-server": "^5.2.2"
+  }
+}
