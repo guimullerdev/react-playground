@@ -131,6 +131,26 @@ FortuneSheet virtualises the viewport, so the render time should stay low regard
 
 ---
 
+## ⚠️ Memory Limitations
+
+FortuneSheet starts showing memory pressure at **~1 million cells (1,000 × 1,000)**:
+
+- The JS array alone for 1M cells occupies hundreds of MBs in heap memory
+- The browser tab may slow down, become unresponsive, or crash entirely depending on the device
+- Observed symptoms: sluggish scrolling, delayed input response, and eventual out-of-memory errors in low-RAM environments
+
+**Recommended limits for stable usage:**
+
+| Scenario | Safe range |
+|---|---|
+| Interactive editing | up to ~100k cells (e.g. 1,000 × 100) |
+| Read-only / display | up to ~500k cells with caution |
+| Stress / benchmark only | 1M+ cells — expect instability |
+
+If your use case requires very large datasets, consider paginating the data (loading visible ranges on demand) or pre-filtering server-side before passing data to the component.
+
+---
+
 ## 🔍 Key Observations
 
 - ✅ **Virtual rendering** — only visible cells are painted; scrolling through 1M cells remains smooth
