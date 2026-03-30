@@ -41,7 +41,6 @@ function generateSheet(): { sheet: Sheet; elapsed: number } {
   const t0 = performance.now();
   const celldata: CellData[] = [];
 
-  // Header row
   for (let c = 0; c < COLS; c++) {
     celldata.push({
       r: 0,
@@ -56,7 +55,6 @@ function generateSheet(): { sheet: Sheet; elapsed: number } {
     });
   }
 
-  // Header column
   for (let r = 1; r < ROWS; r++) {
     celldata.push({
       r,
@@ -71,7 +69,6 @@ function generateSheet(): { sheet: Sheet; elapsed: number } {
     });
   }
 
-  // Data cells (skip header row/col)
   for (let r = 1; r < ROWS; r++) {
     for (let c = 1; c < COLS; c++) {
       celldata.push({
@@ -159,9 +156,12 @@ export default function StressTest() {
     const observer = new MutationObserver(() => {
       if (firstRender.current && renderStart.current !== null) {
         firstRender.current = false;
-        setRenderMs(Math.round(performance.now() - renderStart.current));
-        setPhase("done");
+        const ms = Math.round(performance.now() - renderStart.current);
         observer.disconnect();
+        setTimeout(() => {
+          setRenderMs(ms);
+          setPhase("done");
+        }, 0);
       }
     });
 
@@ -223,12 +223,14 @@ export default function StressTest() {
 
       <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
 
+
         {phase === "idle" && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 16, opacity: 0.6 }}>
             <div style={{ fontSize: 64 }}>📊</div>
             <div style={{ fontSize: 16 }}>Press <strong>Run test</strong> to generate and render {totalCells.toLocaleString()} cells</div>
           </div>
         )}
+
 
         {(phase === "generating" || phase === "rendering") && !sheetData && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12 }}>
@@ -245,7 +247,7 @@ export default function StressTest() {
             <Workbook
               data={sheetData}
               onChange={() => { }}
-              onOp={() => setOps((n) => n + 1)}
+              onOp={() => setTimeout(() => setOps((n) => n + 1), 0)}
             />
           </div>
         )}
