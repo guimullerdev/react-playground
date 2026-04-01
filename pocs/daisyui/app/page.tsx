@@ -253,6 +253,7 @@ export default function Dashboard() {
               <button className="btn btn-ghost btn-sm">Ghost</button>
               <button className="btn btn-sm btn-error">Error</button>
               <span className="badge badge-primary">New</span>
+              <span className="badge badge-primary btn-pill">New</span>
               <span className="badge badge-outline">Stable</span>
               <input type="checkbox" className="toggle toggle-primary toggle-sm" defaultChecked />
               <span className="loading loading-spinner loading-sm text-primary" />
