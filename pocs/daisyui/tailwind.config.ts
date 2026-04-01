@@ -26,6 +26,9 @@ const config: Config = {
                     success: "#34d399",
                     warning: "#fbbf24",
                     error: "#f87171",
+                    "--rounded-btn": "0rem",
+                    "--rounded-box": "0.5rem",
+                    "--btn-text-case": "lowercase",
                 },
                 light: {
                     primary: "#4f46e5",
