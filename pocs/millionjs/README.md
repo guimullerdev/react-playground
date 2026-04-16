@@ -1,65 +1,71 @@
 # Million.js POC
 
-Proof of concept comparing **Million.js** (block virtual DOM) against **plain React** rendering performance.
-
-## Stack
-
-- React 18 + Million.js 3
-- Webpack 5 + SWC (TypeScript / TSX)
-- Tailwind CSS v4
+> A hands-on benchmark comparing **Million.js** (block virtual DOM) against plain **React 18** — including an honest look at when it helps and when it doesn't.
 
 ---
 
-## Running
+## What is Million.js?
+
+Million.js is a drop-in performance layer for React. Instead of running React's standard virtual DOM diffing on every re-render, it compiles components into **blocks** — functions that patch only the parts of the DOM that actually changed.
+
+```
+Standard React VDOM                  Million.js block VDOM
+────────────────────────             ──────────────────────────────
+Re-creates full VDOM tree            Compiles static structure once
+Diffs entire subtree                 Only patches "holes" (dynamic values)
+Allocates new objects every render   Reuses compiled patch functions
+```
+
+The gain comes from skipping work that was never necessary in the first place.
+
+---
+
+## Running the POC
 
 ```bash
 yarn install
-yarn start     # dev server at http://localhost:5120
-yarn build     # production bundle → dist/
+yarn start    # → http://localhost:5120
+yarn build    # production bundle → dist/
 ```
-
----
-
-## What's in the app
-
-| Component | What it shows |
-|-----------|--------------|
-| `Counter` | Simple stateful component — automatically optimised by the compiler (auto mode) |
-| `ItemList` | Dynamic list using Million.js `<For>` instead of `Array.map()` |
-| `Benchmark` | Side-by-side stress test: Million.js vs plain React |
 
 ---
 
 ## How Million.js is applied
 
-### 1. Auto mode (compiler plugin)
+### 1 — Compiler (auto mode)
 
-In `webpack.config.js` the webpack plugin is enabled with `auto: true`:
+The webpack plugin scans your components at build time and automatically wraps eligible ones in `block()`. No code changes needed.
 
 ```js
+// webpack.config.js
 import million from 'million/compiler';
 
 plugins: [
   million.webpack({ auto: true }),
-  // ...
 ]
 ```
 
-This makes the compiler **automatically wrap eligible components** in `block()` at build time — no code changes needed.
+### 2 — Manual `block()`
 
-### 2. Manual block (explicit, used in Benchmark)
+Wrap specific components explicitly for full control.
 
 ```tsx
 import { block } from 'million/react';
 
-const OptimizedRow = block(function OptimizedRow({ row }) {
-  return <div>{row.label} — {row.value}</div>;
+const StockCard = block(function StockCard({ price, change, name }) {
+  return (
+    <div className="card">
+      <h3>{name}</h3>
+      <span className="price">{price}</span>
+      <span className="change">{change}</span>
+    </div>
+  );
 });
 ```
 
-### 3. `<For>` list primitive
+### 3 — `<For>` list primitive
 
-Replaces `Array.map()` for keyed lists. Skips full reconciliation when items are added, removed, or reordered.
+Replaces `Array.map()` for keyed lists. Minimises reconciliation cost when items are added, removed, or reordered.
 
 ```tsx
 import { For } from 'million/react';
@@ -71,74 +77,130 @@ import { For } from 'million/react';
 
 ---
 
-## Stress benchmark
+## When Million.js wins
 
-Open the **Benchmark** section in the running app:
+The block VDOM only pays off when a component has a **high static-to-dynamic ratio**: lots of stable HTML structure with few changing values.
 
-1. Pick a row count (500 / 1000 / 2000 / 5000).
-2. Click **Run** on the **Million.js** panel → wait for it to finish.
-3. Click **Run** on the **Plain React** panel → wait for it to finish.
-4. The **Results** table shows `updateMs` for each variant and the % difference.
+### Good candidate — complex card, few dynamic holes
 
-The measured phase is the **update pass** — after rows are already rendered, all values are randomised simultaneously. This is where the block VDOM difference is most visible.
+```tsx
+// 15+ elements, only 2 update on re-render → block() skips 13
+const MetricCard = block(function MetricCard({ value, trend }) {
+  return (
+    <article className="card">
+      <header>
+        <Icon name="chart" />
+        <h2>Revenue</h2>          {/* static */}
+        <Badge text="Live" />     {/* static */}
+      </header>
+      <section>
+        <Sparkline />             {/* static */}
+        <p className="value">{value}</p>    {/* hole */}
+        <p className="trend">{trend}</p>    {/* hole */}
+      </section>
+      <footer>
+        <span>Updated every 5s</span>      {/* static */}
+        <HelpIcon />                       {/* static */}
+      </footer>
+    </article>
+  );
+});
+```
 
-> **Tip:** run each side 2–3 times and compare the median. The first run includes JIT warm-up noise.
+### Bad candidate — mostly dynamic, little to skip
+
+```tsx
+// Almost everything changes → block() overhead exceeds savings
+const Row = block(function Row({ color, label, value, status }) {
+  return (
+    <div className={color}>       {/* dynamic */}
+      <span>{label}</span>        {/* dynamic */}
+      <span>{value}</span>        {/* dynamic */}
+      <span>{status}</span>       {/* dynamic */}
+    </div>
+  );
+});
+```
 
 ---
 
-## Comparing with/without Million.js (webpack)
+## Use case guide
 
-To get a pure React baseline with the **same code**:
+| Use case | Benefit | Reason |
+|---|---|---|
+| Live data dashboard (metrics, stocks) | High | Same card layout, only numbers change at high frequency |
+| Large data table with stable columns | High | Column structure is static, only cell values update |
+| Chat / feed with rich message bubbles | High | Avatar, name, timestamp layout static; only content changes |
+| Virtualized list with complex items | High | High re-render frequency amortises block setup cost |
+| Simple list rows (2–3 dynamic fields) | None / negative | `block()` overhead exceeds VDOM diff savings |
+| Components that rarely re-render | None | No frequency to amortise the setup cost |
+| Conditional / dynamic structure | None | `block()` bails out — requires stable JSX shape |
+| Initial render | Slight negative | Block compilation adds overhead on mount |
 
-1. Open `webpack.config.js`.
-2. Comment out the plugin:
+---
+
+## Why results are inconsistent between runs
+
+Running the same benchmark multiple times often gives different numbers. This is expected:
+
+- **JIT warm-up** — V8 compiles your code on the first run. Subsequent runs are faster for both sides.
+- **Garbage collection** — GC can pause either side at any point.
+- **React 18 scheduler** — React may batch and defer work across frames.
+- **Measurement timing** — `useEffect` fires after React commits to the DOM but before the browser paints. The recorded time is JS reconciliation + DOM mutation, not full wall-clock render time.
+
+> Always run each side 3+ times and compare medians, not single samples.
+
+---
+
+## Stress benchmark (in-app)
+
+Open the **Stress Benchmark** section in the running app:
+
+1. Pick a row count — **500 / 1,000 / 2,000 / 5,000**.
+2. Click **Run** on the Million.js panel and wait.
+3. Click **Run** on the Plain React panel and wait.
+4. The results table shows `updateMs` per variant and the % difference.
+
+The measured phase is the **update pass**: after rows are rendered, all dynamic values are randomised simultaneously. This is where block VDOM difference is most observable.
+
+---
+
+## Disabling Million.js to compare
+
+Comment out the plugin in `webpack.config.js` and restart the dev server:
 
 ```js
 plugins: [
   // million.webpack({ auto: true }),   ← disabled
   new MiniCssExtractPlugin({ ... }),
   new HtmlWebpackPlugin({ ... }),
-],
+]
 ```
 
-3. Restart the dev server (`yarn start`).
-
-Now the compiler no longer transforms any component. The `<For>` and `block()` imports still work (they fall back to standard React behaviour), so the code compiles without changes.
+The `block()` and `<For>` imports still compile — they fall back to standard React behaviour — so no other code needs to change.
 
 ---
 
-## Profiling with browser tools
+## Real-world expectations
 
-### React DevTools Profiler
+The benchmark numbers cited in Million.js marketing (up to 70% faster) are measured against a specific table pattern with complex rows and only 2–3 dynamic cells per component — the ideal scenario.
 
-1. Install [React DevTools](https://react.dev/learn/react-developer-tools) browser extension.
-2. Open **Profiler** tab → click Record → interact with the benchmark → stop.
-3. Inspect per-component render times in the flame graph.
+In practice:
 
-### Chrome Performance tab
+- **10–30% improvement** in high-frequency update scenarios with the right component shape
+- **Near zero** for components that re-render infrequently
+- **Negative** for simple or mostly-dynamic components
 
-1. Open DevTools → **Performance** → Record.
-2. Click **Run** on one of the benchmark panels.
-3. Stop recording and look at the **Main** thread timeline.
-4. Scripting time is lower for Million.js-optimised components because static parts of the VDOM are compiled away.
+Million.js is not a silver bullet. It is a precise tool for a specific bottleneck: components with stable structure that re-render often.
 
 ---
 
-## How Million.js speeds things up
+## Stack
 
-```
-Standard React VDOM          Million.js block VDOM
-─────────────────────        ──────────────────────────
-Diff entire subtree          Only diff "holes" (dynamic parts)
-Every render recreates       Static structure compiled once
-  the full VDOM tree           at build time; skipped at runtime
-```
-
-The gain is most visible on:
-- **Large flat lists** with frequent value updates (use `<For>`)
-- **Complex leaf components** that re-render often but have little actual change
-- **Tables / data grids** with many rows
-
-It has minimal effect on:
-- Components that already re-render infrequently
-- Components whose entire output changes on every update
+| Tool | Version |
+|---|---|
+| React | 18 |
+| Million.js | 3 |
+| Webpack | 5 |
+| SWC | latest |
+| Tailwind CSS | 4 |
