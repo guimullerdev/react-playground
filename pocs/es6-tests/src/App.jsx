@@ -9,6 +9,7 @@ import ArrayMethods from './components/ArrayMethods';
 import Promises from './components/Promises';
 import ShortCircuit from './components/ShortCircuit';
 import Class from './components/Class';
+import Generators from './components/Generators';
 
 function App() {
   return (
@@ -35,6 +36,8 @@ function App() {
         <ShortCircuit active={false} />
         <br />
         <Class />
+        <br />
+        <Generators />
       </section>
     </>
   )
