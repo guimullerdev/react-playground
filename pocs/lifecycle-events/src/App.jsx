@@ -1,4 +1,5 @@
 import "./App.css";
+import UserFetch from "./components/AbortController";
 
 import Child from "./components/Child";
 import Class from "./components/Class";
@@ -13,6 +14,10 @@ function App() {
       <br />
 
       <Closure />
+
+      <br />
+
+      <UserFetch userId={10}/>
     </section>
   );
 }
