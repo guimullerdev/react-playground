@@ -1,3 +1,41 @@
+/* Router selector */
+.router-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--social-bg);
+}
+
+.router-label {
+  font-size: 13px;
+  opacity: 0.5;
+  margin-right: 4px;
+}
+
+.router-selector button {
+  font-size: 13px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-h);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+
+  &:hover {
+    border-color: var(--accent-border);
+  }
+
+  &.active {
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+    color: var(--accent);
+    font-weight: 600;
+  }
+}
+
 /* Pages */
 .page {
   max-width: 720px;
