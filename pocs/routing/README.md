@@ -1,16 +1,46 @@
-# React + Vite
+# Routing POC — React Router DOM vs TanStack Router
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project runs both routing libraries side by side on the same todo list app (data from [JSONPlaceholder](https://jsonplaceholder.typicode.com)). Use the selector bar at the top to switch between implementations at runtime.
 
-Currently, two official plugins are available:
+## Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```
+src/
+  App.jsx                     # selector toggle (no router here)
+  react-router/
+    Router.jsx                # BrowserRouter + Routes setup
+    pages/Home.jsx
+    pages/TodoDetail.jsx
+  tanstack-router/
+    Router.jsx                # RouterProvider setup
+    pages/Home.jsx
+    pages/TodoDetail.jsx
+```
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Trade-off: React Router DOM vs TanStack Router
 
-## Expanding the ESLint configuration
+| | React Router DOM v7 | TanStack Router v1 |
+|---|---|---|
+| **Community** | Largest React router community, abundant examples | Smaller but growing community |
+| **API simplicity** | Declarative JSX (`<Routes>`, `<Route>`, `<Link>`) — minimal boilerplate | Verbose setup (`createRootRoute`, `createRoute`, `addChildren`) |
+| **Type safety** | Untyped params/search params — runtime errors only | Fully type-safe routes, params and search params — broken links are compile errors |
+| **Search params** | Manual parsing and serialization | Built-in parsing, serialization and validation |
+| **Data loading** | Loaders and actions baked in (Remix-style) | Route-level `loader` with caching and invalidation |
+| **File-based routing** | Requires Remix or a community plugin | Supported out of the box via `@tanstack/router-plugin` |
+| **JavaScript support** | Works without TypeScript, no generated files | JS works but loses the main type-safety benefit |
+| **Bundle size** | ~15 kB gzipped | ~47 kB gzipped |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## When to choose which
+
+| Scenario | Pick |
+|---|---|
+| Greenfield TypeScript app with complex navigation | TanStack Router |
+| Quick prototype or JS-only project | React Router DOM |
+| Already using Remix patterns (loaders/actions) | React Router DOM |
+| Need type-safe search params (filters, pagination) | TanStack Router |
+| Team is new to React routing | React Router DOM |
+| Large app where broken links should be caught at build time | TanStack Router |
