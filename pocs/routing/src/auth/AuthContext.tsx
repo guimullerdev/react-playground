@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 
-interface User {
+export interface User {
   username: string
   token: string
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   login: (username: string, password: string) => Promise<void>
@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return token && username ? { token, username } : null
   })
 
-  async function login(username: string, password: string) {
+  async function login(username: string, _password: string) {
     await new Promise((resolve) => setTimeout(resolve, 200))
     const token = btoa(`${username}:${Date.now()}`)
     localStorage.setItem(TOKEN_KEY, token)
