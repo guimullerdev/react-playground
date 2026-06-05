@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../auth/AuthContext'
 
 export default function Home() {
+  const { isAuthenticated, user, logout } = useAuth()
   const [todos, setTodos] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -18,7 +20,23 @@ export default function Home() {
 
   return (
     <div className="page">
-      <h1>Todo List</h1>
+      <h1>Home</h1>
+      {isAuthenticated ? (
+        <p>
+          Logged in as <strong>{user?.username}</strong>.{' '}
+          <button onClick={logout}>Logout</button>
+        </p>
+      ) : (
+        <p><Link to="/login">Login</Link></p>
+      )}
+      <nav>
+        <ul>
+          <li><Link to="/dashboard">Dashboard</Link></li>
+          <li><Link to="/profile">Profile</Link></li>
+        </ul>
+      </nav>
+      <hr />
+      <h2>Todo List</h2>
       <ul className="todo-list">
         {todos.map((todo) => (
           <li key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
