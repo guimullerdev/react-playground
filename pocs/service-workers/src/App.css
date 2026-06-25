@@ -1,0 +1,173 @@
+/* ── Update banner ────────────────────────────────────────── */
+.sw-update-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--text-h);
+  color: var(--bg);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.sw-update-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: opacity 0.2s;
+
+  &:hover { opacity: 0.85; }
+}
+
+/* ── Status badge ─────────────────────────────────────────── */
+.sw-status-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sw-status-label {
+  font-size: 14px;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--badge-color);
+  background: color-mix(in srgb, var(--badge-color) 12%, transparent);
+  color: var(--badge-color);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.sw-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--badge-color);
+  flex-shrink: 0;
+}
+
+/* ── Lifecycle track ──────────────────────────────────────── */
+.lc-track {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-top: 8px;
+}
+
+.lc-item {
+  display: flex;
+  align-items: center;
+}
+
+.lc-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 96px;
+
+  span {
+    font-size: 13px;
+    color: var(--text);
+    transition: color 0.3s;
+  }
+
+  &.done span { color: #22c55e; }
+  &.active span { color: var(--accent); font-weight: 600; }
+}
+
+.lc-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  transition: all 0.3s;
+
+  .done & {
+    background: #22c55e;
+    border-color: #22c55e;
+  }
+
+  .active & {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+}
+
+.lc-connector {
+  width: 48px;
+  height: 2px;
+  background: var(--border);
+  margin-bottom: 24px;
+  transition: background 0.3s;
+
+  &.done { background: #22c55e; }
+}
+
+/* ── Hint text ────────────────────────────────────────────── */
+.sw-hint {
+  font-size: 15px;
+  color: var(--text);
+  max-width: 360px;
+  text-align: center;
+}
+
+/* ── Center section ───────────────────────────────────────── */
+#center {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  place-content: center;
+  place-items: center;
+  flex-grow: 1;
+  padding: 48px 20px;
+}
+
+h1 {
+  margin: 0;
+}
+
+/* ── Tick decorations ─────────────────────────────────────── */
+.ticks {
+  position: relative;
+  width: 100%;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: -4.5px;
+    border: 5px solid transparent;
+  }
+  &::before {
+    left: 0;
+    border-left-color: var(--border);
+  }
+  &::after {
+    right: 0;
+    border-right-color: var(--border);
+  }
+}
