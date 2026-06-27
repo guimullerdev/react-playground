@@ -1,16 +1,42 @@
-# React + Vite
+# localStorage PoC
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A focused proof-of-concept exploring the **Web Storage API** in a React 19 + Vite app. It covers `localStorage`, `sessionStorage`, and the `storage` event — the three pillars of browser-native persistence.
 
-Currently, two official plugins are available:
+## What's inside
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Demo | Key concept |
+|---|---|
+| **Persist Counter** | Stores a number in `localStorage`; survives page refresh |
+| **User Preferences** | Serialises a plain object with `JSON.stringify` / `JSON.parse` |
+| **Auto-Save Draft** | Debounced writes (600 ms) — reduces storage churn while typing |
+| **Cross-Tab Sync** | Listens to the `storage` event to keep two tabs in sync |
+| **Session Storage** | Same API as `localStorage` but cleared when the tab closes |
+| **Storage Inspector** | Live table of all `localStorage` keys, values, and byte sizes |
 
-## React Compiler
+## Core hook — `useLocalStorage`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+`src/useLocalStorage.js` exposes a single hook:
 
-## Expanding the Oxlint configuration
+```js
+const [value, setValue, removeValue] = useLocalStorage(key, initialValue)
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- Reads from `localStorage` on mount (falls back to `initialValue` if missing or unparseable).
+- `setValue` accepts a value **or an updater function** (`(prev) => next`), mirrors `useState`.
+- `removeValue` deletes the key and resets state to `initialValue`.
+- Fires a custom `localStorageChange` event so the **Storage Inspector** stays in sync within the same tab.
+- Listens to the native `storage` event to react to writes from **other tabs**.
+- Catches `QuotaExceededError` and logs a warning instead of crashing.
+
+## Stack
+
+- React 19
+- Vite 8
+- Oxlint
+
+## Running locally
+
+```bash
+yarn        # install deps
+yarn dev    # start dev server
+```
